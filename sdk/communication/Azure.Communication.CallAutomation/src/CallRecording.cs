@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -65,6 +64,15 @@ namespace Azure.Communication.CallAutomation
                     PauseOnStart = options.PauseOnStart,
                 };
 
+                if (options.RecordingStorage != null)
+                {
+                    // This is required only when blob storage in use
+                    if (options.RecordingStorage is AzureBlobContainerRecordingStorage blobStorage)
+                    {
+                        request.ExternalStorage = new RecordingStorageInternal(blobStorage.RecordingStorageKind, blobStorage.RecordingDestinationContainerUri);
+                    }
+                }
+
                 if (options.AudioChannelParticipantOrdering != null && options.AudioChannelParticipantOrdering.Any())
                 {
                     foreach (var c in options.AudioChannelParticipantOrdering)
@@ -84,11 +92,6 @@ namespace Azure.Communication.CallAutomation
                         }
                         request.ChannelAffinity.Add(newChannelAffinity);
                     }
-                }
-
-                if (options.ExternalStorage is not null)
-                {
-                    request.ExternalStorage = TranslateExternalStorageToInternal(options.ExternalStorage);
                 }
 
                 return _callRecordingRestClient.StartRecording(request, cancellationToken: cancellationToken);
@@ -123,6 +126,15 @@ namespace Azure.Communication.CallAutomation
                     PauseOnStart = options.PauseOnStart,
                 };
 
+                if (options.RecordingStorage != null)
+                {
+                    // This is required only when blob storage in use
+                    if (options.RecordingStorage is AzureBlobContainerRecordingStorage blobStorage)
+                    {
+                        request.ExternalStorage = new RecordingStorageInternal(blobStorage.RecordingStorageKind, blobStorage.RecordingDestinationContainerUri);
+                    }
+                }
+
                 if (options.AudioChannelParticipantOrdering != null && options.AudioChannelParticipantOrdering.Any())
                 {
                     foreach (var c in options.AudioChannelParticipantOrdering)
@@ -142,11 +154,6 @@ namespace Azure.Communication.CallAutomation
                         }
                         request.ChannelAffinity.Add(newChannelAffinity);
                     }
-                }
-
-                if (options.ExternalStorage is not null)
-                {
-                    request.ExternalStorage = TranslateExternalStorageToInternal(options.ExternalStorage);
                 }
 
                 return await _callRecordingRestClient.StartRecordingAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -623,24 +630,5 @@ namespace Azure.Communication.CallAutomation
                 throw;
             }
         }
-
-        #region private functions
-
-        private static ExternalStorageInternal TranslateExternalStorageToInternal(ExternalStorage externalStorage)
-        {
-            ExternalStorageInternal result = null;
-
-            if (externalStorage is BlobStorage blobStorage)
-            {
-                result = new ExternalStorageInternal(blobStorage.StorageType)
-                {
-                    BlobStorage = new BlobStorageInternal(blobStorage.ContainerUri.AbsoluteUri),
-                };
-            }
-
-            return result;
-        }
-
-        #endregion private functions
     }
 }

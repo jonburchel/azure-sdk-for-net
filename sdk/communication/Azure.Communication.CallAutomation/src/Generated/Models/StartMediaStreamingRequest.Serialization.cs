@@ -10,17 +10,20 @@ using Azure.Core;
 
 namespace Azure.Communication.CallAutomation
 {
-    internal partial class ExternalStorageInternal : IUtf8JsonSerializable
+    public partial class StartMediaStreamingRequest : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            writer.WritePropertyName("storageType"u8);
-            writer.WriteStringValue(StorageType.ToString());
-            if (Optional.IsDefined(BlobStorage))
+            if (Optional.IsDefined(OperationCallbackUri))
             {
-                writer.WritePropertyName("blobStorage"u8);
-                writer.WriteObjectValue(BlobStorage);
+                writer.WritePropertyName("operationCallbackUri"u8);
+                writer.WriteStringValue(OperationCallbackUri);
+            }
+            if (Optional.IsDefined(OperationContext))
+            {
+                writer.WritePropertyName("operationContext"u8);
+                writer.WriteStringValue(OperationContext);
             }
             writer.WriteEndObject();
         }
